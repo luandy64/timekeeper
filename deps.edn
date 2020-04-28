@@ -1,1 +1,2 @@
-{:deps {org.clojure/clojurescript {:mvn/version "1.10.520"}}}
+{:deps {org.clojure/clojurescript {:mvn/version "1.10.520"}
+        reagent {:mvn/version "1.0.0-alpha1"}}}
