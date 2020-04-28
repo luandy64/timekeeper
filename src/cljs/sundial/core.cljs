@@ -1,112 +1,110 @@
-(ns sundial.core
+(ns ^:figwheel-always sundial.core
   (:require
-   [reagent.core :as reagent :refer [atom]]
-   [reagent.dom :as rdom]
-   [reagent.session :as session]
-   [reitit.frontend :as reitit]
-   [clerk.core :as clerk]
-   [accountant.core :as accountant]))
+   [reagent.core :as reagent]
+   [reagent.dom :as dom]))
 
 ;; -------------------------
-;; Routes
+;; State
+(defonce app-state
+  (reagent/atom
+   {:year        2020
+    :month-name  "Jan"
+    :month       1
+    :day         1
+    :weekday     1
+    :hour        1
+    :minute      1
+    :second      1
+    :week-days   ["Sunday" "Monday" "Tuesday" "Wednesday" "Thursday" "Friday" "Saturday"]
+    :month-names ["Jan" "Feb" "Mar" "Apr" "May" "Jun" "Jul" "Aug" "Spt" "Oct" "Nov" "Dec"]}))
 
-(def router
-  (reitit/router
-   [["/" :index]
-    ["/items"
-     ["" :items]
-     ["/:item-id" :item]]
-    ["/about" :about]]))
+(defn update-state []
+  (let [current-date (js/Date.)
+        new-state    (-> @app-state
+                         (assoc :year (.getFullYear current-date))
+                         (assoc :month (inc (.getMonth current-date)))
+                         (assoc :month-name (nth (:month-names @app-state) (dec (.getMonth current-date))))
+                         (assoc :day (.getDate current-date))
+                         (assoc :weekday (.getDay current-date))
+                         (assoc :hour (.getHours current-date))
+                         (assoc :minute (.getMinutes current-date))
+                         (assoc :second (.getSeconds current-date)))]
+    (reset! app-state new-state)))
 
-(defn path-for [route & [params]]
-  (if params
-    (:path (reitit/match-by-name router route params))
-    (:path (reitit/match-by-name router route))))
+(defonce state-updater (js/setInterval update-state 1000))
 
-;; -------------------------
-;; Page components
+(defn days-in-month [month-num]
+  "Get the current month and year to pass to the Date constructor with a
+  day=0, which switches the month to the previous month. `.getDate` gets
+  the number of days in the month, so by incrementing current month, we
+  get this month's number of days
+  Args: month-num in [1, 12]
 
-(defn home-page []
-  (fn []
-    [:span.main
-     [:h1 "Welcome to sundial"]
-     [:ul
-      [:li [:a {:href (path-for :items)} "Items of sundial"]]
-      [:li [:a {:href "/broken/link"} "Broken link"]]]]))
+  Proof: (map days-in-month (range 1 13))
+         => (31 29 31 30 31 30 31 31 30 31 30 31)"
+  (.getDate (js/Date. (.getFullYear (js/Date.))
+                      month-num
+                      0)))
 
+(defn get-deg-rotation [index unit-count state-value]
+  (* (/ 360 unit-count)
+     (- index state-value)))
 
+(defn time-component [class-name state-value time-unit-count iterable]
+  "Args:
+   - class-name: keyword of CSS class to add to div
+   - key-prefix: string used in the div's key
+   - state-value: (:some-keyword @state)
+   - time-unit-count: E.g. 12 for months, 7 for days of the week, 28-31 for days
+                      in a month
+   - iterable: Thing to map over"
+  (let [unit-name (name class-name)]
+    (map-indexed (fn [index unit]
+                   (let [key-id (str unit-name "-" index)
+                         is-active? (when (= index state-value)
+                                      "active")
+                         amount (get-deg-rotation index
+                                                  time-unit-count
+                                                  state-value)
+                         rotation (str "rotate(" amount "deg)")]
+                     [:div {:class [unit-name "item" is-active?]
+                            :key key-id
+                            :style {:transform rotation}}
+                      unit]))
+                 iterable)))
 
-(defn items-page []
-  (fn []
-    [:span.main
-     [:h1 "The items of sundial"]
-     [:ul (map (fn [item-id]
-                 [:li {:name (str "item-" item-id) :key (str "item-" item-id)}
-                  [:a {:href (path-for :item {:item-id item-id})} "Item: " item-id]])
-               (range 1 60))]]))
-
-
-(defn item-page []
-  (fn []
-    (let [routing-data (session/get :route)
-          item (get-in routing-data [:route-params :item-id])]
-      [:span.main
-       [:h1 (str "Item " item " of sundial")]
-       [:p [:a {:href (path-for :items)} "Back to the list of items"]]])))
-
-
-(defn about-page []
-  (fn [] [:span.main
-          [:h1 "About sundial"]]))
-
-
-;; -------------------------
-;; Translate routes -> page components
-
-(defn page-for [route]
-  (case route
-    :index #'home-page
-    :about #'about-page
-    :items #'items-page
-    :item #'item-page))
-
-
-;; -------------------------
-;; Page mounting component
-
-(defn current-page []
-  (fn []
-    (let [page (:current-page (session/get :route))]
-      [:div
-       [:header
-        [:p [:a {:href (path-for :index)} "Home"] " | "
-         [:a {:href (path-for :about)} "About sundial"]]]
-       [page]
-       [:footer
-        [:p "sundial was generated by the "
-         [:a {:href "https://github.com/reagent-project/reagent-template"} "Reagent Template"] "."]]])))
+(defn andy-page []
+  [:div {:class "App"}
+   (doall (concat (time-component :weekday
+                                  (:weekday @app-state)
+                                  7
+                                  (:week-days @app-state))
+                  (time-component :month
+                                  (dec (:month @app-state))
+                                  12
+                                  (:month-names @app-state))
+                  (time-component :day
+                                  (dec (:day @app-state))
+                                  (days-in-month (:month @app-state))
+                                  (range 1 (inc (days-in-month (:month @app-state)))))
+                  (time-component :hour
+                                  (dec (:hour @app-state))
+                                  24
+                                  (range 1 25))
+                  (time-component :minute
+                                  (:minute @app-state)
+                                  60
+                                  (range 60))
+                  (time-component :second
+                                  (:second @app-state)
+                                  60
+                                  (range 60))))])
 
 ;; -------------------------
 ;; Initialize app
 
 (defn mount-root []
-  (rdom/render [current-page] (.getElementById js/document "app")))
+  (dom/render [andy-page] (.getElementById js/document "app")))
 
 (defn init! []
-  (clerk/initialize!)
-  (accountant/configure-navigation!
-   {:nav-handler
-    (fn [path]
-      (let [match (reitit/match-by-path router path)
-            current-page (:name (:data  match))
-            route-params (:path-params match)]
-        (reagent/after-render clerk/after-render!)
-        (session/put! :route {:current-page (page-for current-page)
-                              :route-params route-params})
-        (clerk/navigate-page! path)
-        ))
-    :path-exists?
-    (fn [path]
-      (boolean (reitit/match-by-path router path)))})
-  (accountant/dispatch-current!)
   (mount-root))
