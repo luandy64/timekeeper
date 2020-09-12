@@ -1,6 +1,6 @@
 (ns timekeeper.server
     (:require
-     [!timekeeper.handler :refer [app]]
+     [timekeeper.handler :refer [app]]
      [config.core :refer [env]]
      [ring.adapter.jetty :refer [run-jetty]])
     (:gen-class))
