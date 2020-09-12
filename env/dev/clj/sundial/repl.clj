@@ -1,5 +1,5 @@
-(ns sundial.repl
-  (:use sundial.handler
+(ns timekeeper.repl
+  (:use timekeeper.handler
         figwheel-sidecar.repl-api
         ring.server.standalone
         [ring.middleware file-info file]))

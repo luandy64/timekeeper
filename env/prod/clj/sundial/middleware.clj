@@ -1,4 +1,4 @@
-(ns sundial.middleware
+(ns timekeeper.middleware
   (:require
    [ring.middleware.defaults :refer [site-defaults wrap-defaults]]))
 

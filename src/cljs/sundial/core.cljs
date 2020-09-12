@@ -1,4 +1,4 @@
-(ns ^:figwheel-always sundial.core
+(ns ^:figwheel-always timekeeper.core
   (:require
    [reagent.core :as reagent]
    [reagent.dom :as dom]))
@@ -73,6 +73,12 @@
                       unit]))
                  iterable)))
 
+(defn colon [id]
+  (let [key-id (str "colon-" id)]
+    [[:div {:id key-id
+            :key key-id}
+       [:p ":"]]]))
+
 (defn andy-page []
   [:div {:class "App"}
    (doall (concat (time-component :weekday
@@ -91,10 +97,12 @@
                                   (dec (:hour @app-state))
                                   24
                                   (range 1 25))
+                  (colon 1)
                   (time-component :minute
                                   (:minute @app-state)
                                   60
                                   (range 60))
+                  (colon 2)
                   (time-component :second
                                   (:second @app-state)
                                   60

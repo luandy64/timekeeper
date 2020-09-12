@@ -1,4 +1,4 @@
-# Sundial
+# Timekeeper
 
 A responsive Clojurescript + Reagent clock
 
