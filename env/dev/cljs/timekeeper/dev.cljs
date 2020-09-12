@@ -1,6 +1,6 @@
-(ns ^:figwheel-no-load sundial.dev
+(ns ^:figwheel-no-load timekeeper.dev
   (:require
-    [sundial.core :as core]
+    [timekeeper.core :as core]
     [devtools.core :as devtools]))
 
 (extend-protocol IPrintWithWriter

@@ -1,4 +1,4 @@
-(defproject sundial "0.1.0-SNAPSHOT"
+(defproject timekeeper "0.1.0-SNAPSHOT"
   :description "FIXME: write description"
   :url "http://example.com/FIXME"
   :license {:name "Eclipse Public License"
@@ -24,12 +24,12 @@
             [lein-asset-minifier "0.4.6"
              :exclusions [org.clojure/clojure]]]
 
-  :ring {:handler sundial.handler/app
-         :uberwar-name "sundial.war"}
+  :ring {:handler timekeeper.handler/app
+         :uberwar-name "timekeeper.war"}
 
   :min-lein-version "2.5.0"
-  :uberjar-name "sundial.jar"
-  :main sundial.server
+  :uberjar-name "timekeeper.jar"
+  :main timekeeper.server
   :clean-targets ^{:protect false}
   [:target-path
    [:cljsbuild :builds :app :compiler :output-dir]
@@ -54,9 +54,9 @@
               :pretty-print  false}}
             :app
             {:source-paths ["src/cljs" "src/cljc" "env/dev/cljs"]
-             :figwheel {:on-jsload "sundial.core/mount-root"}
+             :figwheel {:on-jsload "timekeeper.core/mount-root"}
              :compiler
-             {:main "sundial.dev"
+             {:main "timekeeper.dev"
               :asset-path "/js/out"
               :output-to "target/cljsbuild/public/js/app.js"
               :output-dir "target/cljsbuild/public/js/out"
@@ -78,11 +78,11 @@
                       refactor-nrepl.middleware/wrap-refactor
                       ]
    :css-dirs ["resources/public/css"]
-   :ring-handler sundial.handler/app}
+   :ring-handler timekeeper.handler/app}
 
 
 
-  :profiles {:dev {:repl-options {:init-ns sundial.repl}
+  :profiles {:dev {:repl-options {:init-ns timekeeper.repl}
                    :dependencies [[cider/piggieback "0.4.2"]
                                   [binaryage/devtools "1.0.0"]
                                   [ring/ring-mock "0.4.0"]

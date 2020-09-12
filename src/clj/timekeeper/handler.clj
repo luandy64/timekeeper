@@ -1,13 +1,13 @@
-(ns sundial.handler
+(ns timekeeper.handler
   (:require
    [reitit.ring :as reitit-ring]
-   [sundial.middleware :refer [middleware]]
+   [timekeeper.middleware :refer [middleware]]
    [hiccup.page :refer [include-js include-css html5]]
    [config.core :refer [env]]))
 
 (def mount-target
   [:div#app
-   [:h2 "Welcome to sundial"]
+   [:h2 "Welcome to timekeeper"]
    [:p "please wait while Figwheel is waking up ..."]
    [:p "(Check the js console for hints if nothing exciting happens.)"]])
 

@@ -1,4 +1,4 @@
-(ns sundial.middleware
+(ns timekeeper.middleware
   (:require
    [ring.middleware.content-type :refer [wrap-content-type]]
    [ring.middleware.params :refer [wrap-params]]
